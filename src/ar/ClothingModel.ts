@@ -6,13 +6,135 @@ export class ClothingModel {
   private model: THREE.Group | null = null;
   private bones: Map<string, THREE.Bone> = new Map();
   private scene: THREE.Scene;
+  private camera: THREE.Camera;
+  private renderer: THREE.WebGLRenderer;
   
   // 옷의 위치와 회전
   private position: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   private rotation: THREE.Euler = new THREE.Euler(0, 0, 0);
+  private userScale: number = 1; // 사용자가 조절하는 스케일
+  private baseScale: number = 1; // 체형에 따른 기본 스케일
+  
+  // 드래그 관련
+  private raycaster: THREE.Raycaster = new THREE.Raycaster();
+  private mouse: THREE.Vector2 = new THREE.Vector2();
+  private isDragging: boolean = false;
+  private dragPlane: THREE.Plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+  private offset: THREE.Vector3 = new THREE.Vector3();
 
-  constructor(scene: THREE.Scene) {
+  constructor(scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) {
     this.scene = scene;
+    this.camera = camera;
+    this.renderer = renderer;
+    
+    this.setupDragControls();
+  }
+
+  private setupDragControls(): void {
+    const canvas = this.renderer.domElement;
+    
+    // 터치 시작
+    canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
+    canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
+    
+    // 터치 이동
+    canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
+    canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    
+    // 터치 종료
+    canvas.addEventListener('touchend', () => this.onDragEnd());
+    canvas.addEventListener('mouseup', () => this.onDragEnd());
+  }
+
+  private getPointerPosition(event: TouchEvent | MouseEvent): { x: number, y: number } {
+    const canvas = this.renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    
+    let clientX: number;
+    let clientY: number;
+    
+    if (event instanceof TouchEvent && event.touches.length > 0) {
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else if (event instanceof MouseEvent) {
+      clientX = event.clientX;
+      clientY = event.clientY;
+    } else {
+      return { x: 0, y: 0 };
+    }
+    
+    const x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    
+    return { x, y };
+  }
+
+  private onTouchStart(event: TouchEvent): void {
+    event.preventDefault();
+    const pos = this.getPointerPosition(event);
+    this.startDrag(pos.x, pos.y);
+  }
+
+  private onMouseDown(event: MouseEvent): void {
+    const pos = this.getPointerPosition(event);
+    this.startDrag(pos.x, pos.y);
+  }
+
+  private startDrag(x: number, y: number): void {
+    if (!this.model) return;
+    
+    this.mouse.set(x, y);
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    
+    // 모델과 교차하는지 확인
+    const intersects = this.raycaster.intersectObject(this.model, true);
+    
+    if (intersects.length > 0) {
+      this.isDragging = true;
+      
+      // 드래그 평면을 카메라 앞에 설정
+      const cameraDirection = new THREE.Vector3();
+      this.camera.getWorldDirection(cameraDirection);
+      this.dragPlane.setFromNormalAndCoplanarPoint(
+        cameraDirection,
+        this.model.position
+      );
+      
+      // 현재 교차점과 모델 위치의 차이 저장
+      const intersectPoint = new THREE.Vector3();
+      this.raycaster.ray.intersectPlane(this.dragPlane, intersectPoint);
+      this.offset.copy(intersectPoint).sub(this.model.position);
+    }
+  }
+
+  private onTouchMove(event: TouchEvent): void {
+    event.preventDefault();
+    const pos = this.getPointerPosition(event);
+    this.drag(pos.x, pos.y);
+  }
+
+  private onMouseMove(event: MouseEvent): void {
+    const pos = this.getPointerPosition(event);
+    this.drag(pos.x, pos.y);
+  }
+
+  private drag(x: number, y: number): void {
+    if (!this.isDragging || !this.model) return;
+    
+    this.mouse.set(x, y);
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    
+    // 드래그 평면과 교차점 찾기
+    const intersectPoint = new THREE.Vector3();
+    this.raycaster.ray.intersectPlane(this.dragPlane, intersectPoint);
+    
+    // 새 위치 = 교차점 - offset
+    this.model.position.copy(intersectPoint).sub(this.offset);
+    this.position.copy(this.model.position);
+  }
+
+  private onDragEnd(): void {
+    this.isDragging = false;
   }
 
   public async loadModel(modelPath: string): Promise<void> {
@@ -28,7 +150,7 @@ export class ClothingModel {
           this.model.position.copy(this.position);
           this.model.rotation.copy(this.rotation);
           
-          // bone 찾기 (Blender에서 만든 Armature의 bone들)
+          // bone 찾기
           this.findBones(this.model);
           
           // 씬에 추가
@@ -40,7 +162,6 @@ export class ClothingModel {
           resolve();
         },
         (progress) => {
-          // 로딩 진행률
           const percent = (progress.loaded / progress.total) * 100;
           console.log(`로딩 중: ${percent.toFixed(2)}%`);
         },
@@ -53,10 +174,8 @@ export class ClothingModel {
   }
 
   private findBones(object: THREE.Object3D): void {
-    // 모델 내의 모든 bone을 찾아서 저장
     object.traverse((child) => {
       if (child instanceof THREE.Bone) {
-        // bone 이름으로 저장 (Blender에서 지정한 이름)
         this.bones.set(child.name, child);
         console.log('Bone 발견:', child.name);
       }
@@ -69,15 +188,13 @@ export class ClothingModel {
       return;
     }
     
-    // 전체 스케일 적용
-    const baseScale = userData.overallScale;
-    this.model.scale.set(baseScale, baseScale, baseScale);
+    // 전체 스케일 저장
+    this.baseScale = userData.overallScale;
+    this.updateModelScale();
     
     // 각 bone별로 체형에 맞는 scale 적용
     const scales = userData.bodyTypeScale;
     
-    // bone 이름은 Blender에서 설정한 이름과 일치해야 합니다
-    // 예시 bone 이름들:
     this.scaleBone('shoulder_L', scales.shoulder, 1, 1);
     this.scaleBone('shoulder_R', scales.shoulder, 1, 1);
     this.scaleBone('chest', scales.chest, scales.chest, 1);
@@ -94,8 +211,19 @@ export class ClothingModel {
     if (bone) {
       bone.scale.set(scaleX, scaleY, scaleZ);
     } else {
-      // bone이 없어도 오류는 내지 않음 (모델에 해당 bone이 없을 수 있음)
       console.warn(`Bone '${boneName}'을 찾을 수 없습니다`);
+    }
+  }
+
+  public setUserScale(scale: number): void {
+    this.userScale = scale;
+    this.updateModelScale();
+  }
+
+  private updateModelScale(): void {
+    if (this.model) {
+      const finalScale = this.baseScale * this.userScale;
+      this.model.scale.set(finalScale, finalScale, finalScale);
     }
   }
 
