@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/AR-fit/', // 본인의 GitHub 저장소 이름으로 변경
   optimizeDeps: {
     include: ['three']
   },
