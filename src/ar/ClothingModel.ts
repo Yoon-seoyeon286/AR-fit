@@ -12,8 +12,8 @@ export class ClothingModel {
   // 옷의 위치와 회전
   private position: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   private rotation: THREE.Euler = new THREE.Euler(0, 0, 0);
-  private userScale: number = 10; // 사용자가 조절하는 스케일
-  private baseScale: number = 15; // 체형에 따른 기본 스케일
+  private userScale: number = 1; // 사용자가 조절하는 스케일 (슬라이더)
+  private baseScale: number = 2; // 기본 스케일 (모델 크기)
   
   // 드래그 관련
   private raycaster: THREE.Raycaster = new THREE.Raycaster();
@@ -149,9 +149,12 @@ export class ClothingModel {
           this.model = gltf.scene;
 
           // 모델의 초기 위치와 크기 설정
-          this.model.position.set(0, -1, -3); // 카메라 앞에 위치
-          this.model.rotation.copy(this.rotation);
-          this.model.scale.set(1, 1, 1);
+          this.model.position.set(0, 0, -2); // 카메라 바로 앞 중앙에 위치
+          this.model.rotation.set(0, 0, 0);
+
+          // 초기 스케일 적용 (크게 보이도록)
+          const initialScale = this.baseScale;
+          this.model.scale.set(initialScale, initialScale, initialScale);
 
           // bone 찾기
           this.findBones(this.model);
@@ -159,7 +162,7 @@ export class ClothingModel {
           // 씬에 추가
           this.scene.add(this.model);
 
-          console.log('모델 로드 완료');
+          console.log('모델 로드 완료, 초기 스케일:', initialScale);
           console.log('찾은 bone 개수:', this.bones.size);
 
           resolve();
@@ -192,14 +195,14 @@ export class ClothingModel {
       console.error('모델이 로드되지 않았습니다');
       return;
     }
-    
-    // 전체 스케일 저장
-    this.baseScale = userData.overallScale;
+
+    // 체형에 따른 스케일 조정 (기본 2에 체형 비율 적용)
+    this.baseScale = 2 * userData.overallScale;
     this.updateModelScale();
-    
+
     // 각 bone별로 체형에 맞는 scale 적용
     const scales = userData.bodyTypeScale;
-    
+
     this.scaleBone('shoulder_L', scales.shoulder, 1, 1);
     this.scaleBone('shoulder_R', scales.shoulder, 1, 1);
     this.scaleBone('chest', scales.chest, scales.chest, 1);
@@ -207,8 +210,8 @@ export class ClothingModel {
     this.scaleBone('hip', scales.hip, scales.hip, 1);
     this.scaleBone('arm_L', scales.arm, scales.arm, 1);
     this.scaleBone('arm_R', scales.arm, scales.arm, 1);
-    
-    console.log('체형 스케일 적용 완료');
+
+    console.log('체형 스케일 적용 완료, 최종 스케일:', this.baseScale * this.userScale);
   }
 
   private scaleBone(boneName: string, scaleX: number, scaleY: number, scaleZ: number): void {
