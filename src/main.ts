@@ -18,6 +18,11 @@ class ARFittingApp {
   private scaleSlider: HTMLInputElement;
   private scaleValue: HTMLElement;
 
+  // 로딩 UI
+  private loadingOverlay: HTMLElement;
+  private loadingBar: HTMLElement;
+  private loadingPercent: HTMLElement;
+
   constructor() {
     console.log('AR 피팅 앱 초기화 시작...');
     
@@ -36,6 +41,11 @@ class ARFittingApp {
     this.checkSizeBtn = document.getElementById('check-size') as HTMLButtonElement;
     this.scaleSlider = document.getElementById('scale-slider') as HTMLInputElement;
     this.scaleValue = document.getElementById('scale-value') as HTMLElement;
+
+    // 로딩 UI
+    this.loadingOverlay = document.getElementById('loading-overlay') as HTMLElement;
+    this.loadingBar = document.getElementById('loading-bar') as HTMLElement;
+    this.loadingPercent = document.getElementById('loading-percent') as HTMLElement;
     
     // 이벤트 리스너 설정
     this.setupEventListeners();
@@ -66,10 +76,27 @@ class ARFittingApp {
     });
   }
 
+  private showLoading(): void {
+    this.loadingOverlay.classList.remove('hidden');
+    this.updateLoadingProgress(0);
+  }
+
+  private hideLoading(): void {
+    this.loadingOverlay.classList.add('hidden');
+  }
+
+  private updateLoadingProgress(percent: number): void {
+    this.loadingBar.style.width = `${percent}%`;
+    this.loadingPercent.textContent = `${Math.round(percent)}%`;
+  }
+
   private async startARMode(): Promise<void> {
     if (!this.userData) return;
 
     console.log('AR 모드 시작...', this.userData);
+
+    // 로딩 표시
+    this.showLoading();
 
     try {
       // 1. 카메라 시작
@@ -95,11 +122,15 @@ class ARFittingApp {
       // 5. 사이즈 계산
       this.sizeRecommender.calculateSize(this.userData);
 
-      // 6. 컨트롤 버튼 표시
+      // 6. 로딩 숨기기
+      this.hideLoading();
+
+      // 7. 컨트롤 버튼 표시
       this.controlsDiv.classList.add('active');
 
       console.log('AR 모드 시작 완료');
     } catch (error) {
+      this.hideLoading();
       console.error('AR 모드 시작 오류:', error);
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
       alert(`AR 모드 오류: ${errorMessage}`);
@@ -108,9 +139,10 @@ class ARFittingApp {
 
   private async loadTestModel(): Promise<void> {
     console.log('테스트 모델 생성 중...');
-    
 
-    await this.clothingModel.loadModel('/assets/models/sh.glb');
+    await this.clothingModel.loadModel('/assets/models/sh.glb', (percent) => {
+      this.updateLoadingProgress(percent);
+    });
   }
 
   private showSizeRecommendation(): void {

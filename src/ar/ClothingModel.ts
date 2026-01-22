@@ -137,7 +137,7 @@ export class ClothingModel {
     this.isDragging = false;
   }
 
-  public async loadModel(modelPath: string): Promise<void> {
+  public async loadModel(modelPath: string, onProgress?: (percent: number) => void): Promise<void> {
     const loader = new GLTFLoader();
 
     console.log('모델 로드 시작:', modelPath);
@@ -165,12 +165,16 @@ export class ClothingModel {
           console.log('모델 로드 완료, 초기 스케일:', initialScale);
           console.log('찾은 bone 개수:', this.bones.size);
 
+          // 100% 완료 콜백
+          if (onProgress) onProgress(100);
+
           resolve();
         },
         (progress) => {
           if (progress.total > 0) {
             const percent = (progress.loaded / progress.total) * 100;
             console.log(`로딩 중: ${percent.toFixed(2)}%`);
+            if (onProgress) onProgress(percent);
           }
         },
         (error) => {
