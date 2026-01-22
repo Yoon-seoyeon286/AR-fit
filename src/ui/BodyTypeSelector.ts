@@ -38,35 +38,37 @@ export class BodyTypeSelector {
   }
 
   private setupEventListeners(): void {
-    // 키, 몸무게 입력시 유효성 검사 (모바일 호환성을 위해 여러 이벤트 추가)
-    ['input', 'change', 'blur'].forEach(eventType => {
-      this.heightInput.addEventListener(eventType, () => this.validateInputs());
-      this.weightInput.addEventListener(eventType, () => this.validateInputs());
-    });
+    // 키, 몸무게 입력시 유효성 검사
+    const validateHandler = () => {
+      console.log('입력 변경 감지');
+      this.validateInputs();
+    };
 
-    // 체형 버튼 클릭/터치 이벤트
+    this.heightInput.addEventListener('input', validateHandler);
+    this.heightInput.addEventListener('change', validateHandler);
+    this.weightInput.addEventListener('input', validateHandler);
+    this.weightInput.addEventListener('change', validateHandler);
+
+    // 체형 버튼 클릭 이벤트 (pointer events 사용)
     this.bodyTypeButtons.forEach(button => {
-      const handleSelect = (e: Event) => {
+      button.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         const bodyType = button.getAttribute('data-type');
+        console.log('체형 선택:', bodyType);
         if (bodyType) {
           this.selectBodyType(bodyType);
         }
-      };
-      button.addEventListener('click', handleSelect);
-      button.addEventListener('touchend', handleSelect);
+      });
     });
 
-    // 시작 버튼 클릭/터치
-    const handleStart = (e: Event) => {
+    // 시작 버튼
+    this.startButton.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      console.log('시작 버튼 클릭됨', e);
+      console.log('시작 버튼 클릭됨, disabled:', this.startButton.disabled);
       if (!this.startButton.disabled) {
         this.startARFitting();
       }
-    };
-    this.startButton.addEventListener('click', handleStart);
-    this.startButton.addEventListener('touchend', handleStart);
+    });
   }
 
   private selectBodyType(bodyType: string): void {

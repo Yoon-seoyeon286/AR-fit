@@ -150,6 +150,11 @@
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
+            cursor: pointer;
+        }
+
+        input[type="number"] {
+            font-size: 16px; /* iOS 줌 방지 */
         }
 
         #controls {
@@ -277,16 +282,16 @@
             <div class="input-group">
                 <label>체형 선택</label>
                 <div class="body-types">
-                    <button class="body-type-btn" data-type="inverted-triangle">역삼각형</button>
-                    <button class="body-type-btn" data-type="triangle">삼각형</button>
-                    <button class="body-type-btn" data-type="rectangle">사각형</button>
-                    <button class="body-type-btn" data-type="round">원형</button>
-                    <button class="body-type-btn" data-type="slim">마른체형</button>
-                    <button class="body-type-btn" data-type="hourglass">모래시계형</button>
+                    <button type="button" class="body-type-btn" data-type="inverted-triangle">역삼각형</button>
+                    <button type="button" class="body-type-btn" data-type="triangle">삼각형</button>
+                    <button type="button" class="body-type-btn" data-type="rectangle">사각형</button>
+                    <button type="button" class="body-type-btn" data-type="round">원형</button>
+                    <button type="button" class="body-type-btn" data-type="slim">마른체형</button>
+                    <button type="button" class="body-type-btn" data-type="hourglass">모래시계형</button>
                 </div>
             </div>
-            
-            <button id="start-btn" disabled>AR 피팅 시작</button>
+
+            <button type="button" id="start-btn" disabled>AR 피팅 시작</button>
         </div>
 
         <!-- AR 컨트롤 -->
