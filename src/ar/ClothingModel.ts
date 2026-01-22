@@ -12,8 +12,8 @@ export class ClothingModel {
   // 옷의 위치와 회전
   private position: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   private rotation: THREE.Euler = new THREE.Euler(0, 0, 0);
-  private userScale: number = 3; // 사용자가 조절하는 스케일
-  private baseScale: number = 5; // 체형에 따른 기본 스케일
+  private userScale: number = 10; // 사용자가 조절하는 스케일
+  private baseScale: number = 15; // 체형에 따른 기본 스케일
   
   // 드래그 관련
   private raycaster: THREE.Raycaster = new THREE.Raycaster();
