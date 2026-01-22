@@ -25,7 +25,15 @@ export class BodyTypeSelector {
     this.bodyTypeButtons = document.querySelectorAll('.body-type-btn');
     this.startButton = document.getElementById('start-btn') as HTMLButtonElement;
     this.panel = document.getElementById('body-type-panel') as HTMLElement;
-    
+
+    console.log('BodyTypeSelector 초기화:', {
+      heightInput: this.heightInput,
+      weightInput: this.weightInput,
+      bodyTypeButtons: this.bodyTypeButtons.length,
+      startButton: this.startButton,
+      panel: this.panel
+    });
+
     this.setupEventListeners();
   }
 
@@ -45,7 +53,8 @@ export class BodyTypeSelector {
     });
     
     // 시작 버튼 클릭
-    this.startButton.addEventListener('click', () => {
+    this.startButton.addEventListener('click', (e) => {
+      console.log('시작 버튼 클릭됨', e);
       this.startARFitting();
     });
   }
@@ -67,14 +76,17 @@ export class BodyTypeSelector {
     // 모든 입력이 유효한지 확인
     const height = parseFloat(this.heightInput.value);
     const weight = parseFloat(this.weightInput.value);
-    
-    const isHeightValid = height >= 100 && height <= 250;
-    const isWeightValid = weight >= 30 && weight <= 200;
+
+    const isHeightValid = !isNaN(height) && height >= 100 && height <= 250;
+    const isWeightValid = !isNaN(weight) && weight >= 30 && weight <= 200;
     const isBodyTypeSelected = this.selectedBodyType !== null;
-    
+
+    console.log('유효성 검사:', { height, weight, bodyType: this.selectedBodyType, isHeightValid, isWeightValid, isBodyTypeSelected });
+
     // 모든 조건이 만족되면 시작 버튼 활성화
     if (isHeightValid && isWeightValid && isBodyTypeSelected) {
       this.startButton.disabled = false;
+      console.log('버튼 활성화됨');
     } else {
       this.startButton.disabled = true;
     }
