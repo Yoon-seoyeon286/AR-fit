@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(del \"c:\\\\Users\\\\panop\\\\Desktop\\\\works\\\\AR-fit\\\\nixpacks.toml\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\panop\\\\Desktop\\\\works\\\\AR-fit\\\\nixpacks.toml\")"
     ]
   }
 }
