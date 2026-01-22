@@ -76,6 +76,18 @@ export const bodyTypes: Record<string, BodyType> = {
       arm: 0.8,        // 팔 20% 더 가늘음
       leg: 0.9,        // 다리 10% 더 가늘음
     }
+  },
+  'hourglass': {
+    name: '모래시계형',
+    description: '어깨와 엉덩이가 넓고 허리가 잘록한 체형',
+    scale: {
+      shoulder: 1.1,   // 어깨 10% 더 넓음
+      chest: 1.1,      // 가슴 10% 더 큼
+      waist: 0.8,      // 허리 20% 더 얇음
+      hip: 1.15,       // 엉덩이 15% 더 큼
+      arm: 0.95,       // 팔 5% 더 가늘음
+      leg: 1.05,       // 다리 5% 더 굵음
+    }
   }
 };
 
