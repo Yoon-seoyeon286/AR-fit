@@ -139,6 +139,17 @@
         #start-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 모바일 터치 지원 */
+        .body-type-btn,
+        #start-btn,
+        .control-btn {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         #controls {
@@ -255,12 +266,12 @@
             
             <div class="input-group">
                 <label for="height">키 (cm)</label>
-                <input type="number" id="height" placeholder="170" min="100" max="250">
+                <input type="number" id="height" placeholder="170" min="100" max="250" inputmode="numeric" pattern="[0-9]*">
             </div>
-            
+
             <div class="input-group">
                 <label for="weight">몸무게 (kg)</label>
-                <input type="number" id="weight" placeholder="65" min="30" max="200">
+                <input type="number" id="weight" placeholder="65" min="30" max="200" inputmode="numeric" pattern="[0-9]*">
             </div>
             
             <div class="input-group">

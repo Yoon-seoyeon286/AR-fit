@@ -38,25 +38,35 @@ export class BodyTypeSelector {
   }
 
   private setupEventListeners(): void {
-    // 키, 몸무게 입력시 유효성 검사
-    this.heightInput.addEventListener('input', () => this.validateInputs());
-    this.weightInput.addEventListener('input', () => this.validateInputs());
-    
-    // 체형 버튼 클릭 이벤트
+    // 키, 몸무게 입력시 유효성 검사 (모바일 호환성을 위해 여러 이벤트 추가)
+    ['input', 'change', 'blur'].forEach(eventType => {
+      this.heightInput.addEventListener(eventType, () => this.validateInputs());
+      this.weightInput.addEventListener(eventType, () => this.validateInputs());
+    });
+
+    // 체형 버튼 클릭/터치 이벤트
     this.bodyTypeButtons.forEach(button => {
-      button.addEventListener('click', () => {
+      const handleSelect = (e: Event) => {
+        e.preventDefault();
         const bodyType = button.getAttribute('data-type');
         if (bodyType) {
           this.selectBodyType(bodyType);
         }
-      });
+      };
+      button.addEventListener('click', handleSelect);
+      button.addEventListener('touchend', handleSelect);
     });
-    
-    // 시작 버튼 클릭
-    this.startButton.addEventListener('click', (e) => {
+
+    // 시작 버튼 클릭/터치
+    const handleStart = (e: Event) => {
+      e.preventDefault();
       console.log('시작 버튼 클릭됨', e);
-      this.startARFitting();
-    });
+      if (!this.startButton.disabled) {
+        this.startARFitting();
+      }
+    };
+    this.startButton.addEventListener('click', handleStart);
+    this.startButton.addEventListener('touchend', handleStart);
   }
 
   private selectBodyType(bodyType: string): void {
