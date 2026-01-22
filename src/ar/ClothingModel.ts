@@ -139,35 +139,40 @@ export class ClothingModel {
 
   public async loadModel(modelPath: string): Promise<void> {
     const loader = new GLTFLoader();
-    
+
+    console.log('모델 로드 시작:', modelPath);
+
     return new Promise((resolve, reject) => {
       loader.load(
         modelPath,
         (gltf) => {
           this.model = gltf.scene;
-          
+
           // 모델의 초기 위치와 크기 설정
-          this.model.position.copy(this.position);
+          this.model.position.set(0, -1, -3); // 카메라 앞에 위치
           this.model.rotation.copy(this.rotation);
-          
+          this.model.scale.set(1, 1, 1);
+
           // bone 찾기
           this.findBones(this.model);
-          
+
           // 씬에 추가
           this.scene.add(this.model);
-          
+
           console.log('모델 로드 완료');
           console.log('찾은 bone 개수:', this.bones.size);
-          
+
           resolve();
         },
         (progress) => {
-          const percent = (progress.loaded / progress.total) * 100;
-          console.log(`로딩 중: ${percent.toFixed(2)}%`);
+          if (progress.total > 0) {
+            const percent = (progress.loaded / progress.total) * 100;
+            console.log(`로딩 중: ${percent.toFixed(2)}%`);
+          }
         },
         (error) => {
           console.error('모델 로드 오류:', error);
-          reject(error);
+          reject(new Error(`모델을 불러올 수 없습니다: ${modelPath}`));
         }
       );
     });

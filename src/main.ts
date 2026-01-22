@@ -76,19 +76,24 @@ class ARFittingApp {
       console.log('카메라 시작 중...');
       await this.arScene.startCamera();
 
-      // 2. 3D 모델 로드
-      console.log('3D 모델 로드 중...');
-      await this.loadTestModel();
-
-      // 3. 체형에 맞게 모델 스케일 조정
-      console.log('체형 스케일 적용 중...');
-      this.clothingModel.applyBodyTypeScale(this.userData);
-
-      // 4. 사이즈 계산
-      this.sizeRecommender.calculateSize(this.userData);
-
-      // 5. 렌더링 시작
+      // 2. 렌더링 시작 (카메라 배경 표시)
       this.arScene.startRenderLoop();
+
+      // 3. 3D 모델 로드
+      console.log('3D 모델 로드 중...');
+      try {
+        await this.loadTestModel();
+
+        // 4. 체형에 맞게 모델 스케일 조정
+        console.log('체형 스케일 적용 중...');
+        this.clothingModel.applyBodyTypeScale(this.userData);
+      } catch (modelError) {
+        console.error('모델 로드 실패:', modelError);
+        alert('3D 모델을 불러오는데 실패했습니다. 기본 화면으로 진행합니다.');
+      }
+
+      // 5. 사이즈 계산
+      this.sizeRecommender.calculateSize(this.userData);
 
       // 6. 컨트롤 버튼 표시
       this.controlsDiv.classList.add('active');
