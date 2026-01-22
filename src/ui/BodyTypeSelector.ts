@@ -39,36 +39,27 @@ export class BodyTypeSelector {
 
   private setupEventListeners(): void {
     // 키, 몸무게 입력시 유효성 검사
-    const validateHandler = () => {
-      console.log('입력 변경 감지');
-      this.validateInputs();
-    };
+    this.heightInput.oninput = () => this.validateInputs();
+    this.heightInput.onchange = () => this.validateInputs();
+    this.weightInput.oninput = () => this.validateInputs();
+    this.weightInput.onchange = () => this.validateInputs();
 
-    this.heightInput.addEventListener('input', validateHandler);
-    this.heightInput.addEventListener('change', validateHandler);
-    this.weightInput.addEventListener('input', validateHandler);
-    this.weightInput.addEventListener('change', validateHandler);
-
-    // 체형 버튼 클릭 이벤트 (pointer events 사용)
+    // 체형 버튼 클릭 이벤트
     this.bodyTypeButtons.forEach(button => {
-      button.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
+      button.onclick = () => {
         const bodyType = button.getAttribute('data-type');
         console.log('체형 선택:', bodyType);
         if (bodyType) {
           this.selectBodyType(bodyType);
         }
-      });
+      };
     });
 
     // 시작 버튼
-    this.startButton.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
+    this.startButton.onclick = () => {
       console.log('시작 버튼 클릭됨, disabled:', this.startButton.disabled);
-      if (!this.startButton.disabled) {
-        this.startARFitting();
-      }
-    });
+      this.startARFitting();
+    };
   }
 
   private selectBodyType(bodyType: string): void {
