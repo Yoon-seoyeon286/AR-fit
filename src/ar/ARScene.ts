@@ -64,22 +64,31 @@ export class ARScene {
 
   public async startCamera(): Promise<void> {
     try {
-      // 후면 카메라 사용 (모바일의 경우)
+      // 후면 카메라 사용
       const constraints = {
         video: {
-          facingMode: 'user', // 'environment'로 변경하면 후면 카메라
+          facingMode: { exact: 'environment' },
           width: { ideal: 1280 },
           height: { ideal: 720 }
         },
         audio: false
       };
-      
-      // 카메라 스트림 가져오기
-      this.cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-      
+
+      try {
+        // 먼저 후면 카메라 시도
+        this.cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch {
+        // 후면 카메라 실패시 기본 카메라 사용
+        console.log('후면 카메라 없음, 기본 카메라 사용');
+        this.cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false
+        });
+      }
+
       // 비디오 엘리먼트에 스트림 연결
       this.videoElement.srcObject = this.cameraStream;
-      
+
       console.log('카메라 시작 완료');
     } catch (error) {
       console.error('카메라 접근 오류:', error);
